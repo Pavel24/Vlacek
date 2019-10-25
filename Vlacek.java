@@ -29,26 +29,25 @@ public class Vlacek {
         Vagonek temp = new Vagonek(type);
         switch (type) {
             case PRVNI_TRIDA:
-                lokomotiva.getNasledujici().setPredchozi(temp);
-                temp.setNasledujici(lokomotiva.getNasledujici());
                 temp.setPredchozi(lokomotiva);
+                temp.setNasledujici(lokomotiva.getNasledujici());
                 lokomotiva.setNasledujici(temp);
+                lokomotiva.getNasledujici().setPredchozi(temp);
                 nastavUmisteni();
-                delka++;
                 break;
             case DRUHA_TRIDA:
-
-                posledni.getPredchozi().setNasledujici(temp);
-                temp.setPredchozi(posledni.getPredchozi());
                 temp.setNasledujici(posledni);
+                temp.setUmisteni(posledni.getPredchozi().getUmisteni() + 1);
+                temp.setPredchozi(posledni.getPredchozi());
+                posledni.getPredchozi().setNasledujici(temp);
                 posledni.setPredchozi(temp);
                 nastavUmisteni();
-                delka++;
                 break;
             case JIDELNI:
                 pridatJidelniVagonek();
                 break;
         }
+        delka++;
     }
 
     public void nastavUmisteni() {
@@ -91,7 +90,7 @@ public class Vlacek {
                     }
                 }
                 break;
-            case LUZKOVY: //...... možná někdy
+            case LUZKOVY:
                 break;
         }
         return temp;
