@@ -1,4 +1,4 @@
-import jdk.dynalink.linker.support.CompositeGuardingDynamicLinker;
+import javafx.scene.chart.ValueAxis;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -9,7 +9,7 @@ public class Vlacek {
     private Vagonek posledni = new Vagonek(VagonekType.POSTOVNI);
     private int delka = 2;
 
-    public Vlacek(){
+    public Vlacek() {
         lokomotiva.setNasledujici(posledni);
         lokomotiva.setUmisteni(1);
         posledni.setPredchozi(lokomotiva);
@@ -23,6 +23,7 @@ public class Vlacek {
      * Poštovní vagonek musí být vždy poslední vagonek lokomotivy
      * Při vkládání vagonku nezapomeňte vagonku přiřadit danou pozici ve vlaku
      * !!!!!!! POZOR !!!!!! pokud přidáváte vagonek jinak než na konec vlaku musíte všem následujícím vagonkům zvýšit jejich umístění - doporučuji si pro tento účel vytvořit privátní metodu
+     *
      * @param type
      */
     public void pridatVagonek(VagonekType type) {
@@ -42,6 +43,13 @@ public class Vlacek {
                 temp.setPredchozi(posledni.getPredchozi());
                 temp.setNasledujici(posledni);
                 posledni.setPredchozi(temp);
+                nastavUmisteni();
+                delka++;
+                break;
+            case TRETI_TRIDA:
+                temp.setPredchozi(posledni);
+                temp.setNasledujici(posledni.getNasledujici());
+                posledni.setNasledujici(temp);
                 nastavUmisteni();
                 delka++;
                 break;
@@ -65,15 +73,17 @@ public class Vlacek {
     public Vagonek getVagonekByIndex(int index) {
         int i = 1;
         Vagonek atIndex = lokomotiva;
-        while(i < index) {
+        while (i < index) {
             atIndex = atIndex.getNasledujici();
             i++;
         }
         return atIndex;
     }
+
     /**
      * Touto metodou si můžete vrátit poslední vagonek daného typu
      * Pokud tedy budu chtít vrátit vagonek typu lokomotiva dostanu hned první vagonek
+     *
      * @param type
      * @return
      */
@@ -93,6 +103,7 @@ public class Vlacek {
 
         return temp;
     }
+
     /**
      * Tato funkce přidá jídelní vagonek za poslední vagonek první třídy, pokud jídelní vagonek za vagonkem první třídy již existuje
      * tak se další vagonek přidá nejblíže středu vagonků druhé třídy
@@ -111,7 +122,7 @@ public class Vlacek {
                 nastavUmisteni();
                 delka++;
                 break;
-            }else if (temp.getType() == VagonekType.DRUHA_TRIDA && temp.getUmisteni() == posledni.getUmisteni() - getPolovinuDruhychTrid() - 1) {
+            } else if (temp.getType() == VagonekType.DRUHA_TRIDA && temp.getUmisteni() == posledni.getUmisteni() - getPolovinuDruhychTrid() - 1) {
                 temp.getNasledujici().setPredchozi(jidelni);
                 jidelni.setNasledujici(temp.getNasledujici());
                 jidelni.setPredchozi(temp);
@@ -119,12 +130,12 @@ public class Vlacek {
                 nastavUmisteni();
                 delka++;
                 break;
-            }
-            else {
+            } else {
                 temp = temp.getNasledujici();
             }
         }
     }
+
     public void pridatLuzkovyVagonek() {
 
         Vagonek luzkovy = new Vagonek(VagonekType.LUZKOVY);
@@ -155,18 +166,20 @@ public class Vlacek {
         int polovinaDruhychTrid;
         if (pocetDruhychTrid % 2 == 0) {
             polovinaDruhychTrid = pocetDruhychTrid / 2;
-        }else {
+        } else {
             polovinaDruhychTrid = pocetDruhychTrid / 2;
         }
         return polovinaDruhychTrid;
     }
+
     /**
      * Funkce vrátí počet vagonků daného typu
      * Dobré využití se najde v metodě @method(addJidelniVagonek)
+     *
      * @param type
      * @return
      */
-    public int getDelkaByType(VagonekType type) {
+    public int getPocetVagonkuByType(VagonekType type) {
         Vagonek temp = lokomotiva;
         int pocetVagonku = 0;
         switch (type) {
@@ -195,11 +208,22 @@ public class Vlacek {
                     temp = temp.getNasledujici();
                 }
                 break;
+            case TRETI_TRIDA:
+                for (int i = 0; i < delka; i++) {
+
+                    if (temp.getType() == VagonekType.TRETI_TRIDA) {
+                        pocetVagonku++;
+                    }
+                    temp = temp.getNasledujici();
+                }
+                break;
         }
         return pocetVagonku;
     }
+
     /**
      * Hledejte jidelni vagonky
+     *
      * @return
      */
     public List<Vagonek> getJidelniVozy() {
@@ -213,9 +237,11 @@ public class Vlacek {
         }
         return jidelniVozy;
     }
+
     /**
      * Odebere poslední vagonek daného typu
      * !!!! POZOR !!!!! pokud odebíráme z prostředku vlaku musíme zbývající vagonky projít a snížit jejich umístění ve vlaku
+     *
      * @param type
      */
     public void odebratPosledniVagonekByType(VagonekType type) {
@@ -240,24 +266,43 @@ public class Vlacek {
                 break;
             case DRUHA_TRIDA:
                 for (int i = 0; i < delka; i++) {
-                    if (temp.getType() == VagonekType.DRUHA_TRIDA) {
-                        temp.getPredchozi().setNasledujici(temp.getNasledujici());
-                        temp.getNasledujici().setPredchozi(temp.getPredchozi());
+                    if (temp.getPredchozi().getType() == VagonekType.DRUHA_TRIDA) {
+                        posledni.getPredchozi().setNasledujici(posledni.getPredchozi());
+                        posledni.getNasledujici().setPredchozi(posledni);
+                        posledni.setPredchozi(posledni.getPredchozi());
                         delka--;
                         posledni.setUmisteni(delka);
-                        Vagonek temp1 = posledni;
                         for (int z = 1; z < delka; z++) {
 
-                            temp1.getPredchozi().setUmisteni(temp1.getUmisteni() - 1);
-                            temp1 = temp1.getPredchozi();
+                            posledni.getPredchozi().setUmisteni(posledni.getUmisteni() - 1);
+                            posledni = posledni.getPredchozi();
                         }
                         break;
                     }
                     temp = temp.getPredchozi();
                 }
                 break;
+            case TRETI_TRIDA:
+                for (int i = 0; i < delka; i++) {
+                    if (temp.getNasledujici().getType() == VagonekType.TRETI_TRIDA) {
+                        posledni.setNasledujici(posledni);
+                        posledni.getNasledujici().setPredchozi(posledni);
+                        delka--;
+                        posledni.setUmisteni(delka);
+
+                        for (int z = 1; z < delka; z++) {
+
+                            posledni.getNasledujici().setUmisteni(posledni.getUmisteni() - 1);
+                            posledni = posledni.getNasledujici();
+                        }
+                        break;
+                    }
+                    posledni = posledni.getPredchozi();
+                }
+                break;
         }
     }
+
     public int getDelka() {
         return delka;
     }
